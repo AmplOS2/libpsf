@@ -30,7 +30,7 @@ private:
                 height    = glyphsize;
                 width     = 8;
 
-                psf_assert(!(flags & ~1));
+                psf_assert(!(flags & ~3));
 
                 return false;
         }
