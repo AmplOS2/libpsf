@@ -23,11 +23,9 @@ public:
         /**
          * Currently only supports PSF2, TODO: PSF 1 support
          */
-        constexpr inline int parse_header(file *psf) {
+        constexpr inline int parse() {
                 // if(bytes[0] == 0x36 && bytes[1] == 0x04):
                 //         psf1
-
-                uint8_t *bytes = psf->bytes;
 
                 // check header
                 psf_assert(bytes[0] == 0x72);
@@ -41,24 +39,24 @@ public:
                 psf_assert(bytes[6] == 0);
                 psf_assert(bytes[7] == 0);
 
-                psf->headersize = lsbint32(bytes, 8);
-                psf->flags      = lsbint32(bytes, 12);
-                psf->length     = lsbint32(bytes, 16);
-                psf->glyphsize  = lsbint32(bytes, 20);
-                psf->height     = lsbint32(bytes, 24);
-                psf->width      = lsbint32(bytes, 28);
+                headersize = lsbint32(bytes, 8);
+                flags      = lsbint32(bytes, 12);
+                length     = lsbint32(bytes, 16);
+                glyphsize  = lsbint32(bytes, 20);
+                height     = lsbint32(bytes, 24);
+                width      = lsbint32(bytes, 28);
 
                 // only valid flag 1 is PSF2_HAS_UNICODE_TABLE and it isnt obvious to me
                 // how to parse that table
-                psf_assert(psf->flags == 0);
+                psf_assert(flags == 0);
 
-                psf_assert(psf->glyphsize == psf->height * ((psf->width + 7) / 8));
+                psf_assert(glyphsize == height * ((width + 7) / 8));
 
                 return 0;
         }
 
-        constexpr inline uint8_t *get_glyph(file *psf, uint8_t *bytes, uint32_t c) {
-                return &bytes[psf->headersize + c * psf->glyphsize];
+        constexpr inline uint8_t *glyph(uint32_t c) {
+                return &bytes[headersize + c * glyphsize];
         }
 };
 
