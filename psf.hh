@@ -8,7 +8,7 @@ namespace psf {
 #define psf_assert(x) \
         if(!(x)) return -1;
 
-class file {
+class font {
 public:
         uint32_t headersize; // offset of bitmaps in file
         uint32_t flags;
@@ -18,7 +18,7 @@ public:
         uint32_t width;
         uint8_t *bytes;
 
-        constexpr inline file(uint8_t *_bytes) : bytes(_bytes) {}
+        constexpr inline font(uint8_t *_bytes) : bytes(_bytes) {}
 
 private:
         constexpr inline bool parse_psf1() {
