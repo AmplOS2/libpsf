@@ -20,19 +20,22 @@ public:
 
         constexpr inline file(uint8_t *_bytes) : bytes(_bytes) {}
 
-        /**
-         * Currently only supports PSF2, TODO: PSF 1 support
-         */
-        constexpr inline int parse() {
-                // if(bytes[0] == 0x36 && bytes[1] == 0x04):
-                //         psf1
+private:
+        constexpr inline bool parse_psf1() {
+                headersize = 4;
+                flags      = bytes[2];
+                // bit 1 is the 512 mode
+                length    = flags & 1 ? 512 : 256;
+                glyphsize = bytes[3];
+                height    = glyphsize;
+                width     = 8;
 
-                // check header
-                psf_assert(bytes[0] == 0x72);
-                psf_assert(bytes[1] == 0xb5);
-                psf_assert(bytes[2] == 0x4a);
-                psf_assert(bytes[3] == 0x86);
+                psf_assert(!(flags & ~1));
 
+                return false;
+        }
+
+        constexpr inline bool parse_psf2() {
                 // check version
                 psf_assert(bytes[4] == 0);
                 psf_assert(bytes[5] == 0);
@@ -46,18 +49,34 @@ public:
                 height     = lsbint32(bytes, 24);
                 width      = lsbint32(bytes, 28);
 
-                // only valid flag 1 is PSF2_HAS_UNICODE_TABLE and it isnt obvious to me
-                // how to parse that table
+                // only valid flag is 1 aka PSF2_HAS_UNICODE_TABLE
+                // and it isnt obvious to me how to parse that table
+                // TODO: support the unicode table
                 psf_assert(flags == 0);
 
                 psf_assert(glyphsize == height * ((width + 7) / 8));
 
-                return 0;
+                return false;
         }
 
-        constexpr inline uint8_t *glyph(uint32_t c) {
-                return &bytes[headersize + c * glyphsize];
+public:
+        /**
+         * Parses the PSF 1 or 2 header.
+         *
+         * Doesn't support all modes/flags yet.
+         *
+         * Returns `true` on error.
+         */
+        constexpr inline bool parse() {
+                if(bytes[0] == 0x36 && bytes[1] == 0x04) return parse_psf1();
+                else if(bytes[0] == 0x72 && bytes[1] == 0xb5 && bytes[2] == 0x4a &&
+                        bytes[3] == 0x86)
+                        return parse_psf1();
+                else
+                        return true;
         }
+
+        constexpr inline uint8_t *glyph(uint32_t c) { return &bytes[headersize + c * glyphsize]; }
 };
 
 #undef psf_assert
