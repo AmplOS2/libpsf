@@ -4,59 +4,53 @@
 namespace {
 namespace psf {
 
-#define lsbint32(b, i) ((b)[i] | (b)[i + 1] << 8 | (b)[i + 2] << 16 | (b)[i + 3] << 24)
-#define psf_assert(x) \
-        if(!(x)) return -1;
-
 class font {
 public:
-        uint32_t headersize; // offset of bitmaps in file
-        uint32_t flags;
-        uint32_t length;    // in glyphs
-        uint32_t glyphsize; // number of bytes for each character
-        uint32_t height;
-        uint32_t width;
+        uint_fast32_t headersize;
+        uint_fast32_t flags;
+        uint_fast32_t nglyphs;
+        uint_fast32_t bytesperglyph;
+        uint_fast32_t height;
+        uint_fast32_t width;
         uint8_t *bytes;
 
         constexpr inline font(uint8_t *_bytes) : bytes(_bytes) {}
 
 private:
         constexpr inline bool parse_psf1() {
+                flags  = bytes[2];
+                height = bytesperglyph = bytes[3];
+                // 512 if flag bit 1 is set, 256 otherwise
+                nglyphs    = (flags & 1) << 8 | 0xff;
                 headersize = 4;
-                flags      = bytes[2];
-                // bit 1 is the 512 mode
-                length    = flags & 1 ? 512 : 256;
-                glyphsize = bytes[3];
-                height    = glyphsize;
-                width     = 8;
+                width      = 8;
 
-                psf_assert(!(flags & ~3));
+                return (flags & ~3);
+        }
 
-                return false;
+        constexpr inline uint_fast32_t lsbint32(uint_fast16_t i) {
+                i *= 4;
+                // I checked the C++ Operator Precedence and this works
+                return bytes[i] | bytes[i + 1] << 8 | bytes[i + 2] << 16 | bytes[i + 3] << 24;
         }
 
         constexpr inline bool parse_psf2() {
                 // check version
-                psf_assert(bytes[4] == 0);
-                psf_assert(bytes[5] == 0);
-                psf_assert(bytes[6] == 0);
-                psf_assert(bytes[7] == 0);
+                if(bytes[4] || bytes[5] || bytes[6] || bytes[7]) return true;
 
-                headersize = lsbint32(bytes, 8);
-                flags      = lsbint32(bytes, 12);
-                length     = lsbint32(bytes, 16);
-                glyphsize  = lsbint32(bytes, 20);
-                height     = lsbint32(bytes, 24);
-                width      = lsbint32(bytes, 28);
+                headersize    = lsbint32(2);
+                flags         = lsbint32(3);
+                nglyphs       = lsbint32(4);
+                bytesperglyph = lsbint32(5);
+                height        = lsbint32(6);
+                width         = lsbint32(7);
 
                 // only valid flag is 1 aka PSF2_HAS_UNICODE_TABLE
                 // and it isnt obvious to me how to parse that table
                 // TODO: support the unicode table
-                psf_assert(flags == 0);
+                if(flags) return true;
 
-                psf_assert(glyphsize == height * ((width + 7) / 8));
-
-                return false;
+                return bytesperglyph != height * ((width + 7) / 8);
         }
 
 public:
@@ -68,18 +62,19 @@ public:
          * Returns `true` on error.
          */
         constexpr inline bool parse() {
-                if(bytes[0] == 0x36 && bytes[1] == 0x04) return parse_psf1();
-                else if(bytes[0] == 0x72 && bytes[1] == 0xb5 && bytes[2] == 0x4a &&
-                        bytes[3] == 0x86)
+                if(bytes[0] == 0x36 && bytes[1] == 0x04)
+                        return parse_psf1();
+                else if(bytes[0] == 0x72 && bytes[1] == 0xb5 &&
+                        bytes[2] == 0x4a && bytes[3] == 0x86)
                         return parse_psf1();
                 else
                         return true;
         }
 
-        constexpr inline uint8_t *glyph(uint32_t c) { return &bytes[headersize + c * glyphsize]; }
+        constexpr inline uint8_t *operator[](uint32_t c) {
+                return &bytes[headersize + c * bytesperglyph];
+        }
 };
-
-#undef psf_assert
 
 }
 }
