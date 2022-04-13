@@ -1,0 +1,64 @@
+---
+Language:        Cpp
+BasedOnStyle:    Google
+AccessModifierOffset: -8
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveBitFields: true
+AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakBeforeMultilineStrings: false
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping:
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+ColumnLimit:     100
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 8
+ContinuationIndentWidth: 8
+FixNamespaceComments: false
+IncludeBlocks:   Regroup
+IncludeCategories:
+  - Regex:           '^<.*'
+    Priority:        1
+    SortPriority:    0
+  - Regex:           '.*'
+    Priority:        2
+    SortPriority:    0
+IndentCaseLabels: true
+IndentCaseBlocks: false
+IndentExternBlock: NoIndent
+IndentGotoLabels: false
+# unfortunately we cant make this indent - and only this - 1
+# TODO: file a bug at llvm
+IndentPPDirectives: None
+IndentWidth:     8
+PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyBreakComment: 30
+PointerAlignment: Right
+RawStringFormats:
+  - Language:        Cpp
+    Delimiters:
+      - c
+      - cc
+      - cpp
+      - hh
+      - h
+    CanonicalDelimiter: ''
+    BasedOnStyle:    google
+ReflowComments:  true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: Never
+SpacesBeforeTrailingComments: 1
+SpacesInAngles:  false
+Standard:        Latest

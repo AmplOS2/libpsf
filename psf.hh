@@ -12,7 +12,7 @@ public:
         uint_fast32_t bytesperglyph;
         uint_fast32_t height;
         uint_fast32_t width;
-        uint8_t *bytes;
+        uint8_t      *bytes;
 
         constexpr inline font(uint8_t *_bytes) : bytes(_bytes) {}
 
@@ -62,10 +62,9 @@ public:
          * Returns `true` on error.
          */
         constexpr inline bool parse() {
-                if(bytes[0] == 0x36 && bytes[1] == 0x04)
-                        return parse_psf1();
-                else if(bytes[0] == 0x72 && bytes[1] == 0xb5 &&
-                        bytes[2] == 0x4a && bytes[3] == 0x86)
+                if(bytes[0] == 0x36 && bytes[1] == 0x04) return parse_psf1();
+                else if(bytes[0] == 0x72 && bytes[1] == 0xb5 && bytes[2] == 0x4a &&
+                        bytes[3] == 0x86)
                         return parse_psf1();
                 else
                         return true;
